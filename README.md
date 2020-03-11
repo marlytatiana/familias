@@ -1,7 +1,7 @@
-# Purpose
+# Practice with Familias
 
 Version 0.1.0
-
+_*Purpose*_
 This project aims to facilitate how three data sets from the same population but with different information (i.e different variables, not all the individuals identifiable) go to a general cleaning of identifiers, then the data is horizontally merge and statistically analyzed afterwards.
 
 ### Size of the data
