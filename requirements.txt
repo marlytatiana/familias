@@ -1,0 +1,15 @@
+R version 3.6.0 (2019-04-26)
+
+* install.packages("data.table")
+* install.packages("data.table")
+* install.packages("dplyr")
+* install.packages("ggplot2")
+* install.packages("backports")
+* install.packages("tidyverse")
+* install.packages("rapportools")
+* install.packages("descr")
+* install.packages("fastDummies")
+* install.packages("magrittr")
+* install.packages("rdrobust")
+
+No installation instructions are required so far

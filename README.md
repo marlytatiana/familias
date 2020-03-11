@@ -1,9 +1,27 @@
-# familias
+# Practice with Familias
 
 Version 0.1.0
 
-This project aims to identify household members in educational databases and pro[D[D[A[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Destimate effects [3~[3~[3~[3~[3~[3~[3~[3~[3~[3~[3~[C[C[B[B[D[B[A[3~[3~[3~[3~[C[C[C[C[C[1;5C[B[A 
+_*Purpose*_
 
+This project aims to facilitate how three data sets from the same population but with different information (i.e different variables, not all the individuals identifiable) go to a general cleaning of identifiers, then the data is horizontally merge and statistically analyzed afterwards.
+
+- Size of the data
+Sometimes individual data sets are big in size and it is important to read it first by parts. For instance, read first column and/or first row.
+
+- Cleaning identifiers
+More often than not identifiers are duplicated or contain missing values. Hence, the code looks for these two features.
+
+- Merge
+After read and clean the next step is to merge the available datasets
+
+- Statistics
+Let's analyze the final data
+
+## Assumptions
+One first assumption is that the databases used are large databases. This implies that either a usual read.delimit function may not work or may take longer time that would further affect coding or analysis.
+A second assumption is that several databases are involved. For example, two or more data sets should be merged.
+A third assumption is that it is possible to combine (join) the data bases by unique identifiers.
 
 ## Project organization
 
