@@ -1,0 +1,936 @@
+---
+title: "Data Managment Plan"
+subtitle: 'Econometric Methods 2 (ECRMRS1)'
+author: "Marly Tatiana Celis"
+email: "m.t.celisgalvez@students.uu.nl"
+date: "January 31th, 2020"
+abstract: This Data Management Plan describes the cleaning data sets that were undertaken with three administrative datasets. Three challenges were faced during this project. The first one was related to efficiency. Due to the size in the storage of the datasets, some variables and individuals were prioritized for further analysis. The second one was the identification of selectivity issues that arouse in administrative data. One selectivity issue was the case of attrition or dropouts, also it was the case with defiers or pupils who were eligible for a conditional cash transfer but did not participate. Finally, the third issue is the challenge imposed by Big Data in applied economics and the necessity to explore software like R.
+output: 
+  pdf_document:
+    latex_engine: xelatex
+
+---
+
+```{r setup, include=TRUE}
+
+knitr::opts_chunk$set(echo = TRUE,  tidy.opts=list(width.cutoff=60), tidy=TRUE, eval = FALSE)
+
+#eval = FALSE, When everything is working properly I will leave this as eval == true
+#now I'm taking it off and putting in in every chunk
+
+#r = getOption("repos")
+#r["CRAN"] = "http://cran.us.r-project.org"
+#options(repos = r)
+
+#if (!require("data.table")) { install.packages("data.table"); library(data.table) }
+#if (!require("data.table")) { install.packages("data.table"); library(data.table) }
+#if (!require("dplyr)")) {install.packages("dplyr"); library(dplyr)}
+#if (!require("ggplot2)")) {install.packages("ggplot2"); library(ggplot2)}
+#if (!require("backports")) {install.packages("backports"); library(backports)} 
+#if (!require("tidyverse)")) {install.packages("tidyverse"); library(tidyverse)}
+#if (!require("rapportools")) {install.packages("rapportools"); library(rapportools)}
+#if (!require("descr")) {install.packages("descr"); library(descr)}
+#if (!require("fastDummies")) {install.packages("fastDummies"); library(fastDummies)}
+#if (!require("magrittr")) {install.packages("magrittr"); library(magrittr)}
+#if install.packages("fakeR")
+
+```
+
+
+# 1. Objectives and scope
+
+The main goal of this project is to display the advantages and disadvantages when working with _administrative data_ for research purposes. In addition, it potential contribution and caveats for decision policy making. In order to attain its purpose this Data Management Plan will use three set of administrative data collected in Colombia. One was collected from 2001 to 2017, the second from 2014 to 2017, and the thrid is a cross-sectional database. 
+
+This project illustrate the following challenges:
+
+> 1.  Three different sources of information for the same pool of individuals. Therefore, some selectivity issues and atrition issues would be found.
+2.  Panel data characteristics in two of the data sets. The records were kept everyyear for the same individual.
+3.  Adpotion of techniques from big data related to large-scale data sets avaiable. Working with a suitable software and a appropriate libraries and packages is key for a research output.
+4.  Insights of the usefulness of data currently collected by governments or other agencies. In this aspect, the set up for a _Regression Discontinuity_ estimation would be pursue.
+
+
+This Data Management Plan would produce the following outputs:
+
+> 1.  One script file from R
+2. One pdf output with R code and comments
+3. On dictionary for the data sets used
+3.  Graphs, tables, and figures as the statistical analysis produce them
+
+
+# 2. Data documentation
+
+## 2.1 Definition of *Administrative Data*
+
+Administrative data refers to all information collected by governments or other organizations for non-statistical reasons to provide overviews on registration, transactions, and record keeping. 
+
+>> * Data are not collected for research purposes
+* May be large and complex
+* Semi-systemtatic (Panel data)
+* May be messy (extensive data management to clean and organise the data)
+* Multidimensional
+* Usually a know population _universe_
+* Trade-off between number of individuals observed and amount of information per individual. In other words, it exists a gain in terms of having more data in terms of individuals, but most of the time variables of characteristics of those indivudals are restrictied (too specific).
+
+>> - First data base: Enrollment in formal primary and high-school education records. Simat
+- Second data base: Identification system for social assistance. A unified vulnerability assessment and identification system for social assistance. Colombia. Through the establishment of a unified household
+- Third data base: Program Conditional Cash Transfer Records 
+
+## 2.2 Data documentation
+
+\resizebox{\linewidth}{!}{ 
+\begin{tabular}{|l|l|l|l|}\hline
+Question & Sisben & Simat & Admin \\ \hline
+What type of data will be collected  & Poverty & Enrollment & Treatment \\ \hline
+Will it be reproducible?  & Only through retrospective surveys &  Only through retrospective surveys & Surveys - Census \\ \hline
+What is the estimated size of the data?  & 1.2 GB & 3.41 GB & 10.8 \\ \hline
+Which tools or software are needed to create/process/visualize the data? &  R  & R &  \\ \hline
+\end{tabular}
+} 
+
+# 3. Handle
+
+## 3.1 Data access, storage, and security
+
+How to properly handle administrative data is of major concern becasue issues about its storage, access, and data protection must be establish by governamental agencies and researchers from the beginning. In adittion, in these regards governments may have different interest than researchs. For intance, for data regarding sensitive information such as income or wage, public agencies restrict the usage of their data. In contrast, researchers may want to have full access to those kind of variables. Consequentely, where the data is store, who can access it, and how it will be protected is key to discuss.
+
+>> -All the data is storage in a shared folder in a _SharePoint_, which is a system that allows document management and storage. The owner is a governmental agency responsible for monitoring and evaluating programs in Colombia. Thus, the raw data is to stored and backed up in those folders. No changes can be made on raw data.
+- Access to the data is highly restrictive. Only authorized individuals have access to _certain_ information. This means that some variables and characteristics regarded as sensible are not share. For the present project only a subset of variables were avaiable for all three datasets. This is good practice because no harm can be done on origial raw data by external people.
+- An adittional back up version of the raw data is storage, so that backups are made with sufficient frequency and prevent data loss.
+- Regarding data protection and security this data is cover by a confidentiality aggrement that took place back in Colombia under a more broad general aggrement.
+- The present datasets cannot be shared due to rules of personal data and intellectual property.
+- Only general ouputs such as graphs and summary tables can be published eventually.
+
+
+## 3.2 Software - Using R
+
+This data management project uses primarly R, R studio, R markdown and occasiaonlay text editors to visualize some features of the data. Advantages:
+
+* R allows to import several types objects at a time, including several datasets. Some ohter packages, like STATA, do not. For this project this will be useful since two data set will be analized, also probably the data will be read(import) in sections, furthermore some reshapes are necessary.
+* R is a versatile software that nowadays is being enhanced to addrees challenges of bid data, mainly more effcient use of data storage and ram memory usage.
+
+Some packages required were the following
+
+* install.packages("data.table")
+* install.packages("data.table")
+* install.packages("dplyr")
+* install.packages("ggplot2")
+* install.packages("backports")
+* install.packages("tidyverse")
+* install.packages("rapportools")
+* install.packages("descr")
+* install.packages("fastDummies")
+* install.packages("magrittr")
+* install.packages("rdrobust")
+
+
+```{r libraries, eval=TRUE}
+
+#Remove prevoius elements in R environment
+  rm(list=ls())
+
+#free up memrory and report the memory usage.
+  gc() 
+
+#Set up the directory
+  setwd("D:\\coding\\educ")
+  getwd()
+
+#Call important libraries
+  
+  #data.table::update.dev.pkg()
+  library(data.table)
+  library(knitr)
+  library(png)
+  library(dplyr)
+  library(ggplot2)
+  library(tidyverse)
+  library(rapportools)
+  library(descr)
+  library(fastDummies)
+  library(formatR)
+  library(plyr)
+  library(magrittr)
+  library(fakeR)
+  
+```
+
+
+# 4. Cleaning data
+
+The first attempt of importing the datasets used a basic command _read.delim_ which is typically used to read in delimited text files, where data is organized in a data matrix with rows representing cases and columns representing variables.
+
+```{r firstdelim , eval=FALSE}
+
+#read.delim("matriz.txt")
+#read.delim("cn_per_id_simat_2014_2017.txt")
+#read.delim("ANSPE_SisbenDiciembre2012.txt")
+
+```
+
+However, this procedure led to a failure in the assignment of RAM memory while importing the data. As a consequence the first challenge for this project is reading the files in a efficient but still useful way.
+
+*![Crash.](D:/2_2019_Colombia/data_fa/crash.jpg)
+
+```{r metadata, eval=false}
+
+
+
+
+```
+
+```{r usingfread, eval=TRUE}
+
+#read.delim("matriz.txt")
+
+#First I am going to check the dimension of the databases
+#I import only the first row independently of the number of columns, thus I will know first dimension 
+
+  admin_c <- fread("./data/raw/admin.txt", nrows =1)
+  educ_c <- fread("./data/raw/educ.txt",nrows=1)
+  score_c<- fread("./data/raw/score.txt",nrow=1)
+  
+#Here I create an object with the name of the columns, or variable  
+  var_admin_c <- names(admin_c) #I can create an object with this import
+  var_educ_c <- names(educ_c) #I can create an object with this import
+  var_score_c <- names(score_c) #I can create an object with this import
+
+#Here I am checking the dimensions     
+  dim(admin_c)
+  dim(educ_c)
+  dim(score_c)
+  
+#second I import only one column and all rows
+  #To do that, I use the command edit combined with names, which will open an emergent windows with the row names
+  #
+  #
+  #in the open file I'll have option to select some names. I'll use this later on, when importing the selected columns, for now I'm creating an object with name of the first row
+  
+  #edit(names(admin_c))
+  var_1_admin <-c("ID_REGISTRO")
+  #edit(names(score_c))
+  var_1_score <-c("puntaje")
+  #edit(names(educ_c))
+  var_1_educ <-c("PER_ID")
+  
+#now, I'm going to read all rows and just one row
+  admin_r <- fread("./data/raw/admin.txt", select = var_1_admin )
+  educ_r <- fread("./data/raw/educ.txt", select = var_1_educ)
+  score_r <-fread("./data/raw/score.txt", select = var_1_score)
+  
+  dim(admin_r)
+  dim(educ_r)
+  dim(score_r)
+
+#In total a full merge of these two datasets would give us
+  dim(admin_r)*dim(admin_c)
+  dim(educ_r)*dim(educ_c)
+  dim(score_r)*dim(score_c)
+
+
+  #edit(names(simat_r))
+
+```
+
+Important to know the distribution of the variables, knowing missings, knowing outliers. Selectivity issues, average of the whole dataset, always report the changes
+
+
+> Data set 1 Administrative data - Matriz
+
+\begin{center}
+  \begin{tabular}{|l|l|l|l|}\hline
+  Administrative & ID & ... & k=218  \\ \hline
+  i=1           &             &     &       \\ \hline
+  i=2           &             &     &       \\ \hline
+  ...           &             &     &       \\ \hline
+  i=17.378.601  &             &     &       \\ \hline
+  \end{tabular}
+\end{center}
+
+> Data set 2 Educational data - Simat
+
+\begin{center}
+  \begin{tabular}{|l|l|l|l|}\hline
+  Educational & ID & ... & k=65  \\ \hline
+  i=1           &             &     &       \\ \hline
+  i=2           &             &     &       \\ \hline
+  ...           &             &     &       \\ \hline
+  i=14.191.305  &             &     &       \\ \hline
+  \end{tabular}
+\end{center}
+
+> Data set 3 Score data - Sisben
+
+\begin{center}
+  \begin{tabular}{|l|l|l|l|}\hline
+  Score & ID & ... & k=106  \\ \hline
+  i=1           &             &     &       \\ \hline
+  i=2           &             &     &       \\ \hline
+  ...           &             &     &       \\ \hline
+  i=31.953.138  &             &     &       \\ \hline
+  \end{tabular}
+\end{center}
+
+
+For the following reasons, a merge of the three datasets in _one go_ would be inneficient:
+
+* The number of individuals is not the same. Therefore the number of rows will probably increase. Section 5 will explain this in detail.
+* It is also probable that not all inviduals are required for the analysis. Because the reason above, and also in terms of the purposes of the research.
+* The first dataset containts information for a longer span of time, mainly from 2001 to 2017, whereas the second dataset is framed between 2014 to 2017.
+
+
+The data comes as follows
+
+```{r struct, eval=TRUE}
+
+str(admin_c)
+str(educ_c)
+str(score_c)
+
+```
+
+Another caveat to do a straight merge in one go is the way two of the datasets are structured. This is the administrative data and the educational data are in a _wide_ panel structure. As follows
+
+> Data set 1 Admin
+This database contains extrainformation for each year 
+
+\begin{center}
+  \begin{tabular}{|l|l|l|l|l|l|l|l|l|l|}\hline
+  Admin & ID & age & ... & school 2001 & school 2002 & ... & school 2014 & ... &  school 2017   \\ \hline
+  i=1           &             &     &   &   & & & & &    \\ \hline
+  i=2           &             &     &   &   & & & & &     \\ \hline
+  ...           &             &     &   &   & & & & &     \\ \hline
+  i=17.378.601  &             &     &   &   & & & & &    \\ \hline
+  \end{tabular}
+\end{center}
+
+Each column indicates if the individual was atending school each year, but does not tell us any other useful information
+
+
+> Data set 2 Educational Simat
+
+\begin{center}
+  \begin{tabular}{|l|l|l|l|l|l|l|l|l|}\hline
+  Educ & ID & schoolgrade14 & dropout14 & acadsit14 & finalsit14 & schoolgrade2015 & ... & finalsit2017  \\ \hline
+  i=1           &             &     & & & & & &       \\ \hline
+  i=2           &             &     & & & & & &     \\ \hline
+  ...           &             &     & & & & & &     \\ \hline
+  i=14.191.305  &             &     & & & & & &     \\ \hline
+  \end{tabular}
+\end{center}
+
+In this dataset each year contains important information about potential output variables, such as drop out rates, graduation rates, 
+
+Finally the score data set has only one cross sectional information that would be used to have the score and the potential pre-treatment variables.
+
+After this description of the data sets, the next sections will be related to the treated of each data set and then the merge and a potential analysis for a Regression Discontinuity design.
+
+```{r memory, eval=TRUE}
+
+#In order to free up space I am gonna drop innecesary data and objects
+memory.size()
+gc()
+#rm(list=ls())
+
+```
+
+## 4.1 Educational dataset
+
+
+```{r educational, eval=TRUE}
+
+#Import all data of education
+educ_1 <- fread("./data/raw/educ.txt")
+  #head(educ_1)
+
+#In this step I am going to identify panel individuals
+observable_1 <- ifelse(educ_1$NRO_DOCUMENTO_2014=="",1,0) #New dummy object
+  table(observable_1) #Visualization of the frequencies
+  prop.table(table(observable_1)) #Visualization of proportions
+  
+observable_2 <- ifelse(educ_1$NRO_DOCUMENTO_2015=="",1,0)
+  table(observable_2) #Visualization of the frequencies
+  prop.table(table(observable_2)) #Visualization of proportions
+  
+observable_3 <- ifelse(educ_1$NRO_DOCUMENTO_2016=="",1,0)
+  table(observable_3) #Visualization of the frequencies
+  prop.table(table(observable_3)) #Visualization of proportions
+
+observable_4 <- ifelse(educ_1$NRO_DOCUMENTO_2017=="",1,0)
+  table(observable_4) #Visualization of the frequencies
+  prop.table(table(observable_4)) #Visualization of proportions
+
+```
+
+### 4.1.1 Attrition
+The previous output shows that attrition is an important issue for the educational data that is being analized in this project. 
+In educational context, the number of individuals who are enrolled baseline year, but are not enrolled the following year, are most probable individuals who departure from formal education prior to completion of the degree.
+
+Some other explanations are graduation, schools transfers (for instance private non regulated schools), and administrative issues. The first one would only make sense for indivuals who are enrolled in last year, otherwise, attition can be interpreted as an initial approximation of _dropuouts_.
+
+Graduation can be explore by a contingency table between the enrollment grade and the attrition indicator, as follows
+
+```{r dropouts, eval=TRUE}
+
+CrossTable(educ_1$GRADO_2014, observable_2, prop.c = FALSE, prop.chisq=FALSE,prop.t=FALSE)
+
+```
+
+In the table it can be recognised that in fact at 11th grade the _attrition_ rate is high. It is close to 97%. A good indicator as a graduation rate. However, for the oher grades it confimrs the first insight that attrition implies dropuouts.
+
+### 4.1.2 Reenrollment
+
+Another remarkable issue found in the educational data is that dropping out of school is not necessarily a permanent outcome. This is possible to identify due to the panel structure of the dataset. The following table shows tha some individuals were not in hte baseline year 2014 but rahter enrolled later, 2015, 2016 or 2017. These pupils could be newstudents or _reenrollments_.
+
+```{r reenroll, eval=TRUE}
+
+CrossTable(educ_1$GRADO_2014, observable_1, prop.c = FALSE, prop.chisq=FALSE,prop.t=FALSE)
+CrossTable(observable_1, observable_2, prop.chisq=FALSE,prop.t=FALSE)
+CrossTable(observable_1, observable_3, prop.chisq=FALSE,prop.t=FALSE)
+CrossTable(observable_1, observable_4, prop.chisq=FALSE,prop.t=FALSE)
+
+CrossTable(observable_2, observable_3, prop.chisq=FALSE,prop.t=FALSE)
+CrossTable(observable_2, observable_4, prop.chisq=FALSE,prop.t=FALSE)
+
+CrossTable(observable_3, observable_4, prop.chisq=FALSE,prop.t=FALSE)
+
+```
+
+Very often literature is focus on studying dropouts rates and its determinants. Nonentheless, reenrollments is a worthwhile topic of study. Neither of those aspects will be further explore in this Data Management Project, but are left open to discussion.
+
+### 4.1.3 Balance edcuation-panel 
+
+The solution to attrition for this project is to use only indivduals who apperar in all years.
+
+```{r paneleduc, eval=TRUE}
+
+#Here an object with a dummy variable is created to visualize the whole diagnostic
+observable_completo <- ifelse(educ_1$NRO_DOCUMENTO_2014=="",1,
+                     ifelse(educ_1$NRO_DOCUMENTO_2015=="",1,
+                            if_else(educ_1$NRO_DOCUMENTO_2016=="",1,
+                                    ifelse(educ_1$NRO_DOCUMENTO_2017=="",1,0))))
+
+  table(observable_completo) #Visualization of the frequencies
+  prop.table(table(observable_completo)) #Visualization of proportions
+
+
+#Finally here a new data frame is created in such a way that the original data remains with no harm
+new_educ_1 <- educ_1[which(educ_1$NRO_DOCUMENTO_2014!="" & educ_1$NRO_DOCUMENTO_2015!="" & educ_1$NRO_DOCUMENTO_2016!="" & educ_1$NRO_DOCUMENTO_2017!="")]
+dim(new_educ_1)
+
+```
+The new dataset is approximately 55% of the initial dataset. This apparent _lost_ of information is rather an oportunity to further study movements of students cohorts (dropouts and reenrollments).
+
+
+Now, it is important to creat some new variables of interest: (1) a dummy identfier for retakers and (2) the number of times a pupil has been a retaker.
+
+```{r newvareduc, eval=TRUE}
+
+#Here a dummy variable for retakers is created
+  new_educ_1$retaker14 <- ifelse(new_educ_1$REPITENTE_2014=="S",1,0)
+  new_educ_1$retaker15 <- ifelse(new_educ_1$REPITENTE_2015=="S",1,0)
+  new_educ_1$retaker16 <- ifelse(new_educ_1$REPITENTE_2016=="S",1,0)
+  new_educ_1$retaker17 <- ifelse(new_educ_1$REPITENTE_2017=="S",1,0)
+
+#Here it is created in a more efficient way
+
+dummy_cols(new_educ_1, select_columns = c("REPITENTE_2014", "REPITENTE_2015", 
+                                          "REPITENTE_2016", "REPITENTE_2017"), remove_first_dummy = TRUE)
+
+new_educ_1$num_retakes <- rowSums(new_educ_1[,c("REPITENTE_2014_N","REPITENTE_2015_N","REPITENTE_2016_N","REPITENTE_2017_S")])
+hist(new_educ_1$num_retakes)
+
+new_educ_1$GRADO_2014 <- factor(new_educ_1$GRADO_2014,
+                      levels=c("-2", "-1","0","1","2","3","4","5","6","7","8","9","10","11","12","13","20","21","22","23","24","25","26","99"),
+                      labels=c("Pre-kinder","Kinder1","0grade","1stgrade","2nd", "3th","4th","5th","6th","7th",
+                               "8th","9th","9th","10th","11th","12th","13th","A_1","A_2","A_3","A_4","A_5","A_6","Other"))
+
+attributes(new_educ_1$GRADO_2014)
+
+CrossTable(new_educ_1$GRADO_2014,new_educ_1$num_retakes)
+```
+
+A new file with only relevant data is save
+
+```{r sav_ed, evalu=TRUE}
+
+names(new_educ_1)
+Cols.Chosen=c("PER_ID", "ID_REGISTRO_2014","MUN_CODIGO_2014","NOMBRE1_2014", "NOMBRE2_2014","APELLIDO1_2014","APELLIDO2_2014", "FECHA_NACIMIENTO_2014","REPITENTE_2014","NUEVO_2014","SIT_ACAD_ANO_ANT_2014","CON_ALUM_ANO_ANT_2014","ESTADO_DEFINITIVO_2014","ID_REGISTRO_2015","MUN_CODIGO_2015","TIPO_DOCUMENTO_2015","NRO_DOCUMENTO_2015","NOMBRE1_2015","NOMBRE2_2015","APELLIDO1_2015","APELLIDO2_2015","FECHA_NACIMIENTO_2015" ,"EDAD1_2015","GRADO_2015","REPITENTE_2015","NUEVO_2015","SIT_ACAD_ANO_ANT_2015","CON_ALUM_ANO_ANT_2015","ESTADO_DEFINITIVO_2015","ID_REGISTRO_2016","MUN_CODIGO_2016","TIPO_DOCUMENTO_2016","NRO_DOCUMENTO_2016","NOMBRE1_2016","NOMBRE2_2016","APELLIDO1_2016","APELLIDO2_2016","FECHA_NACIMIENTO_2016","EDAD1_2016","GRADO_2016","REPITENTE_2016", "NUEVO_2016","SIT_ACAD_ANO_ANT_2016","CON_ALUM_ANO_ANT_2016",  "ESTADO_DEFINITIVO_2016", "ID_REGISTRO_2017","MUN_CODIGO_2017","TIPO_DOCUMENTO_2017","NRO_DOCUMENTO_2017","NOMBRE1_2017","NOMBRE2_2017","APELLIDO1_2017","APELLIDO2_2017"     ,"FECHA_NACIMIENTO_2017","EDAD1_2017","GRADO_2017","REPITENTE_2017","NUEVO_2017","SIT_ACAD_ANO_ANT_2017", "CON_ALUM_ANO_ANT_2017", "ESTADO_DEFINITIVO_2017", "REPITENTE_2014_N", "REPITENTE_2015_N", "REPITENTE_2016_N","REPITENTE_2017_S")
+
+ #DT[,(Cols.Chosen):=NULL] 
+    final_educ <- new_educ_1[,(Cols.Chosen):=NULL]
+    #getwd()
+    fwrite(final_educ, "./data/temp/final_educ.csv")  # A new file with only relevant data is save
+
+```
+
+## 4.2 Administrative data, CCT program
+
+It is important to remember that, the administrative data corresponds to information collected for the purposes of (1) registration and (2) compliance. It is important to define what a Conditional Cash Transfer is. Familias en Acción _consists_ of cash transfers to poor families conditional on children attending school and meeting basic preventive health care requirements. 
+
+This data is very rich in terms of information, as it was shown before it contains 218 variables. This is the case because the public program _Familias en Accion_ has been implemented since 2000. Until today the program is being implemented all over the country. For that very reason, this dataset includes the main verification parameters for each year. 
+
+For this project only six varaibles will be use for two reasons. First, importing the whole dataset is extremely computational demanding, to properly work it would be necessary to have a potent computer or a serverd. Second, for the purpose of this project, which to illustrate the potential use of this data to perform reseach, only some key varaibles are enough.
+
+One important issue emerged at the first attempt of importing the administrative data. As was explained before, the whole dataset has 17million of individuals, this is becuase some of them are families that have been beneficiers since the programme started. Thus in order to do a more efficient analysis of the data, in this report only beneficiries from the last cohort will be analyzed and therfore, only their information will be keep.
+
+
+```{r readfa, eval=TRUE}
+
+#rm(list=ls())
+#Recall as before
+admin_c <- fread("./data/raw/admin.txt", nrows =1)
+
+  #var_trial <- c("INDICADOR_FASE")
+  #admin_c <- fread("matriz.txt", select = var_trial)
+  #summary(admin_c)
+  #table(admin_c)
+
+  var_trial <- c("INDICADOR_FASE", "CODBENEFICIARIO_MFA")
+  admin_c <- fread("./data/raw/admin.txt", select = var_trial)
+  summary(admin_c)
+  #table(admin_c)
+  only_mfa_2 <- ifelse(!is.na(admin_c$CODBENEFICIARIO_MFA),1,0)
+  table(only_mfa_2)
+  CrossTable(admin_c$INDICADOR_FASE,only_mfa_2, prop.r = FALSE, prop.c = TRUE, prop.t = FALSE,
+           prop.chisq = FALSE)
+  
+```
+
+
+Now, once the issue was overcome the data is imported properly.
+
+```{r precleanreadfa, eval=TRUE}
+
+variables <-c( "CODBENEFICIARIO_MFA", "PERMANENCIA", "EDAD", "TIPODOCUMENTO", "DOCUMENTO", "SEXO")
+admin_c <- fread("./data/raw/admin.txt", select = variables)
+
+  memory.size()
+  gc()
+  str(admin_c)
+  summary(admin_c)
+
+#Duplicates are ommited,
+  unique_admin <- admin_c[!duplicated(admin_c[,c("DOCUMENTO")]),]
+  dim(unique_admin)
+  dim(admin_c)
+  17378601 -15788044 
+#1 million and 5 hundres observvations had duplicated id
+  #head(unique_admin)
+
+  final_admin<-unique_admin[!is.na(unique_admin$CODBENEFICIARIO_MFA)]
+  summary(final_admin)
+```
+At this stage, there is already a way more efficient dataset, but the computer is working very slowly. In order to work efficiently, I'm going to check for duplicates and non available registers.
+
+
+```{r cleaning, eval=TRUE}
+
+missing_perm <- ifelse(final_admin$PERMANENCIA=="NA",1,0)
+  table(missing_perm)
+  prop.table(table(missing_perm))
+
+missing_age <- ifelse(final_admin$EDAD=="NA" |  final_admin$EDAD=="",1,0)
+  table(missing_age)
+  prop.table(table(missing_age))
+
+```
+There are no furthermissing values. Thus a new simplyfied data will be saved.
+
+```{r savefa, eval=TRUE}
+
+getwd()
+fwrite(final_admin, "./data/temp/final_admin.csv")
+#rm(list = ls())
+
+```
+
+
+## 4.3 Score data, SISBEN
+
+This is probably the most important dataset because it contains the variable _score_ which is the one that determines who is suitable to participate in the programe and receive the cash transfer. As before, only some variables will be keep, and some observations must be ommitted.
+
+```{r cleanscore, eval=FALSE}
+  #THIS CHUNKC OF CODE IS NOT FOR RUNNING
+  variables <-c("puntaje", "tipodoc", "documen", "ingresos", "usotele", "nevera", "lavadora", "tvcolor", "tvcable", "calenta",
+                "horno", "aire", "computador", "equipo", "moto", "tractor", "auto1", "bieraices")
+
+  score_c<- fread("./data/raw/score.txt",select = variables)
+  
+  hist(score_c$ingresos)
+  #Variable income is extremely bad to analyse it.
+  
+  #Therefore other variables may play an important role, such as a proxy of welath or number of assets owned by the house.
+  #This variable however should be created
+  
+  score_c$num_assets <- rowSums(score_c[,c("usotele", "nevera", "lavadora", "tvcolor", "tvcable", "calenta",
+                "horno", "aire", "computador", "equipo", "moto", "tractor", "auto1", "bieraices")])
+  hist(score_c$num_assets)
+  score_c <- score_c[!duplicated(score_c[,c("documen")]),]
+  summary(score_c)
+  score_c<-score_c[!is.na(score_c$puntaje)]
+  head(score_c)
+  Cols.Chosen<-c("num_assets", "puntaje","documen", "ingresos" )
+  final_score <- score_c[,(Cols.Chosen):=NULL]
+  getwd()
+  final_score$puntaje<-as.numeric(final_score$puntaje)
+  #hist(final_score$puntaje)
+  str(score_c$puntaje_2)
+  score_c$puntaje <- as.numeric(score_c$puntaje)
+  
+
+```
+
+The following chunck of code was run several times. Due to the size of the dataset it takes long to load completely. Therefore, to run more efficiently the code the data is saved in _rds_ format. This trick reduces the size of the file because it is stored in _R_ format. Since this change is applyied as an intermidiate step no harm is done in terms of reproducibility of the analysis later on.
+
+```{r cleaning_2, eval=FALSE}
+  
+
+  #Now I'm selecting the variables I need to import first
+  variables_min <-c("puntaje", "documen", "nevera", "lavadora", "tvcolor", "tvcable", "calenta",
+                "horno", "aire", "computador", "equipo", "moto", "tractor", "auto1", "bieraices")
+  #Import only the selected variables but all observations
+  score_c<- fread("./data/raw/score.txt",select = variables_min)
+  
+  # Save an object to a file
+  saveRDS(score_c, file = "./data/temp/score_c.rds")
+  # Restore the object
+  #readRDS(file = "score_c.rds")
+
+  #A quick check of the score variable
+  hist(score_c$puntaje)
+
+```
+
+As discussed before one important variable is number of assets. Before I create the variable I need to recode each of the input variables into dummy variables. Because as can be seen there are code as 1 and 2
+
+
+```{r cleaning_3, eval=TRUE}
+  
+  score_c <- readRDS(file = "./data/temp/score_c.rds")
+  summary(score_c)
+  table(score_c$nevera)  
+  
+  #Instead of recode each one separtely, I recode all at once
+  dummy_cols(score_c, select_columns = c("nevera", "lavadora", "tvcolor", "tvcable", "calenta",
+                "horno", "aire", "computador", "equipo", "moto", "tractor", "auto1", "bieraices"))
+  
+  #Now to create the new variable with the number of assets, I am gonna used the dummies I have just created
+  score_c$num_assets <- rowSums(score_c[,c("nevera", "lavadora", "tvcolor", "tvcable", "calenta",
+                "horno", "aire", "computador", "equipo", "moto", "tractor", "auto1", "bieraices")])
+  hist(score_c$num_assets)
+  
+  #A simple score between score and assets shows a not so clear relation, but perhaps maybe with some density plots the relation    would be more clear
+  #plot(score_c$puntaje,score_c$num_assets)
+
+```
+
+In this step it was verified that the data set is clean of missing and NA values. Again to keep it simple only the important variables shall remain
+  
+  
+```{r cleaning_4, eval=TRUE}
+  
+  missing_score <- ifelse(score_c$puntaje=="NA" |  score_c$puntaje=="",1,0)
+    table(missing_score) #There are no missing scores
+  
+  missing_assets <- ifelse(score_c$num_assets=="NA" |  score_c$num_assets=="",1,0)
+    table(missing_assets) #There are no missing assets
+  
+  missing_id <- ifelse(score_c$documen=="NA" |  score_c$documen=="",1,0)
+    table(missing_id) #There are almost 800 thousands missing id 
+    dim(score_c)
+  
+  score_unique <- score_c[!duplicated(score_c[,c("documen")]),]
+    dim(score_unique) #There were also 1153375 duplicated entries
+  
+  score_na<-score_unique[!is.na(score_unique$documen)]
+  
+  Cols.Chosen <- c("nevera", "lavadora", "tvcolor", "tvcable", "calenta", "horno", "aire", "computador", "equipo",
+                   "moto","tractor", "auto1", "bieraices")
+  
+  final_score <- score_na[,(Cols.Chosen):=NULL]
+  getwd()
+  fwrite(final_score, "./data/temp/final_score.cvs")
+  saveRDS(final_score, file = "./data/temp/final_score.rds")
+
+  alternative_score <- select(score_na,
+                              puntaje, documen, num_assets)
+  
+```
+
+
+# 5. Merge
+
+
+## 5.1 Importing the cleaned data
+
+```{r reading_all, eval=TRUE}
+
+#rm(list=ls())
+
+score_practice<- readRDS(file = "./data/temp/final_score.rds")
+admin_practice<- fread("./data/temp/final_admin.csv")
+educ_practice <- fread("./data/temp/final_educ.csv")
+#summary(admin)
+#summary(educ)
+summary(score_practice)
+```
+
+## 5.2 Inner Join and Left Join
+
+R allows for four types of merges or _joins_
+
+- Inner join: returns all the matching observations in both the datasets
+- Left join: retunrs all observations from the left dataset and the matched observations from the right dataset
+- Right join: retunrs all observations from the right dataset and the matched observations from the left dataset
+- Full join: returns all rows when there is match in one of the datsets
+
+```{r merging, eval=FALSE}
+
+setkey(admin_practice,DOCUMENTO)
+setkey(educ_practice,NRO_DOCUMENTO_2014)
+setkey(score_practice,documen)
+
+#dt_a[dt_b, on = .(b = y)]
+
+admin_educ_practice <- admin_practice[educ_practice, on = .(DOCUMENTO = NRO_DOCUMENTO_2014)]
+nomatch=0
+admin_educ_score_practice <- admin_educ_practice[score_practice, on =.(DOCUMENTO = documen)]
+summary(admin_educ_score_practice)
+
+```
+```{r merge_2, eval=TRUE }
+
+admin_project <- rename(admin_practice, c("DOCUMENTO"="ID"))
+educ_project <- rename(educ_practice, c("NRO_DOCUMENTO_2014"="ID"))
+score_project <- rename(score_practice, c("documen"="ID"))
+
+```
+
+
+\begin{center}
+\begin{tabular}{|l|l|l|l|}
+    Score     &     Y     &     D     &     T \\  \hline
+    X         &     Yi    &     D=1   &     T=1 \\  \hline
+    X         &     Yi    &     D=1   &     T=1 \\  \hline
+    X         &     Yi    &     NA    &     T=0 \\  \hline
+    X         &     NA    &     NA    &     NA  
+\end{tabular}
+\end{center}
+
+
+
+Therefore the strategy goes as follows
+
+- I first do a inner join between _score_ and _educ_. In that sense I am observing all poor people, with a score (above or below the cutoff) that are observable in the educational dataset. There are some people I am not interested in such as non scholar population.
+- Second, I do a left join between the first merge in the previous step and the _admin_ data set. In that sense, I am keeping all potential beneficiries because I am keeping all individuals with score, in the left dataset. Also, I am identifying the treated people. Consequently all _NA_ in the administrative data corresponds to people with a score that are attending school and such all of them are potential _comparison group_. Further test should be done to verify they are a valid counterfactual.
+
+
+```{r merge_real, eval=TRUE}
+
+
+
+#Inner join
+score_educ<-merge(score, educ, by.x = "ID", by.y = "ID") %>% print
+  dim(score_educ)
+
+#Left join
+score_educ_admin <- merge(score_educ, admin, by = "ID", all.x = TRUE) %>% print
+  dim(score_educ_admin)
+  
+```
+
+```{r verifc, eval=TRUE}
+
+treated <- ifelse(!is.na(score_educ_admin$CODBENEFICIARIO_MFA),1,0)
+  table(treated) 
+
+dummy_puntaje <- ifelse(!is.na(score_educ_admin$puntaje),1,0)
+  table(dummy_puntaje) #This confirms that all individuals has an score assigned
+  
+  rm("admin", "educ", "score", "score_educ")
+  
+```
+
+```{r savingdata, eval=TRUE}
+
+setDF(score_educ_admin)
+
+class(score_educ_admin)
+
+# Save an object to a file
+  saveRDS(score_educ_admin, file = "./data/processed/score_educ_admin.rds")
+
+write.csv(score_educ_admin,'./data/processed/score_educ_admin.csv')
+
+# Restore the object
+  score_educ_admin <- readRDS(file = "./data/processed/score_educ_admin.rds")
+
+
+
+```
+
+# 5. Exploratory stastistics
+
+## 5.2 Statistics
+
+Now let's review some general statistics for the whole dataset that finally was created
+
+``` {r stateduc, eval=TRUE}
+
+score_educ_admin$treated <- ifelse(!is.na(score_educ_admin$CODBENEFICIARIO_MFA),1,0)
+  table(treated) 
+  
+treated.f <- factor(treated, levels= c(0,1),
+  labels = c("Comparison", "Beneficiarie"))
+
+score_educ_admin$treated_f <- factor(treated, levels= c(0,1),
+  labels = c("Comparison", "Beneficiarie"))
+
+str(score_educ_admin)
+
+```
+
+
+```{r aboutrd, eval=TRUE}
+# Kernel Density Plot
+  d1 <- density(score_educ_admin$puntaje) # returns the density data
+  plot(d1, main = "Kernel density of score") # plots the results
+
+# Density plots using a more stylish code  
+  p <- ggplot(score_educ_admin, aes(x=puntaje)) + geom_density()
+  p
+  p+ geom_vline(aes(xintercept=(weight=30.1)) ,
+            color="blue", linetype="dashed", size=1)
+
+  newgraph <- ggplot(score_educ_admin, aes(x=puntaje, color=treated.f)) +
+  geom_density()
+  newgraph
+
+# Add mean lines
+
+mean_sco <- ddply(score_educ_admin, "treated.f", summarise, grp.mean=mean(puntaje))
+
+compagraph <-ggplot(score_educ_admin, aes(x=puntaje, color=treated.f)) +
+  geom_density()+
+  geom_vline(data=mean_sco, aes(xintercept=grp.mean, color=treated.f),
+             linetype="dashed")
+compagraph
+
+
+```
+
+
+```{r distr1, eval= TRUE}
+
+
+ggplot(score_educ_admin, aes(treated, puntaje)) +
+        geom_boxplot()
+
+```
+
+```{r distr2, eval= TRUE}
+
+ggplot(score_educ_admin, aes(treated, num_retakes)) +
+        geom_boxplot()
+```
+
+```{r distr3, eval= TRUE}
+ggplot(score_educ_admin, aes(treated, num_assets)) +
+        geom_boxplot()
+
+
+```
+
+
+## 5.3 Regression Discontinuity Design
+
+As mentioned in the purpose of thisData Managment Project, one of the purpose is also to show the potential use of these data as inputs for an impact evaluation and therfore for decision policy making. To do that a general overview of a regression discontinuity design. However, deeper analysis is not presented here.
+
+To show this potential use the RDROBUST command is used.
+
+[sites.google.com/site/rdpackages](https://sites.google.com/site/rdpackages/home)
+
+install.packages('rdrobust')
+library(rdrobust)
+
+
+This package has the following features
+
+- rdrobust: inference and graphical procedures using local polynomial and partitioning regression methods.
+- rdlocrand: finite-sample inference using local randomization methods.
+- rddensity: manipulation testing using local polynomial density methods.
+- rdmulti: estimation, inference, RD Plots, and extrapolation with multiple cutoffs and multiple scores.
+- rdpower: power and sample size calculations using robust bias-corrected local polynomial inference.
+
+
+```{r trialrd, eval=FALSE}
+
+
+#score_educ_admin <- readRDS(file = "score_educ_admin.rds")
+
+attach(score_educ_admin) 
+
+rdplot(y=num_retakes, x=puntaje, binselect="es", c=32, ci=95, 
+         title="RD Plot: Program", 
+         y.label="Number of retakes",
+         x.label="Score")
+
+rdplot(y=treated, x=puntaje, binselect="es", c=32, ci=95, 
+         title="RD Plot: Program", 
+         y.label="Treatment",
+         x.label="Score")
+
+
+
+summary(rdrobust(y=num_retakes, x=puntaje, c=30))
+
+```
+
+# Final Remarks
+
+## Some errors
+
+During the develpment of this data managment project some issues occurred in regard with R and RMarkdown implementation. Programming in R has been a challenging task since it is a constant developing software. 
+
+
+When importing the data some issues were faced. Some related to the libraries that requiere other libraries. For example:
+
+>> Error: When i is a data.table (or character vector), the columns to join by must be specified using 'on=' argument (see ?data.table), by keying x (i.e. sorted, and, marked as sorted, see ?setkey), or by sharing column names between x and i (i.e., a natural join). Keyed joins might have further speed benefits on very large data due to x being sorted in RAM.
+
+When reading the first time, some columns are type 'integer64' but package bit64 is not installed. Those columns will print as strange looking floating point data. There is no need to reload the data. Simply install.packages('bit64') to obtain the integer64 print method and print the data again.
+
+![import.](D:\2_2019_Colombia\data_fa\while_reading_score.png)
+
+
+It was neccesary to debug R and Latex. Useful information was found
+
+[Source of R Markdown](https://yihui.org/tinytex/r/#debugging) 
+
+
+![rmark.](D:\2_2019_Colombia\data_fa\rmarkdown.png)
+
+One importat issue is that the so called _*BIG DATA*_ comes not only with opportunities but also with challenges. Whether it comes from administrative data, as in the present case, or it comes from other kind of sources of information. The following error shows that a simple statistical summary can fail when the data anlayez is big enough to not be supported by one computer.
+
+![rderr.](D:\2_2019_Colombia\data_fa\while_rd.png)
+
+# Conclusions
+
+* R is an effective data handling and storage software, and it offers several different ways to perform the same function. Thus it is challenging to manage.
+* The dataset were _reduce_ in size to properly perform the data cleaning and to create one _clean_ easily usable data set. 
+* The final dataset *score_educ_admin.csv* can be open in other softwares such as STATA or SPSS.
+* During the data cleaning some important selectivity issues were found and discussed. One being attrition. In terms of educational indicators, attittion represents dropouts, pupils who leave school. A second selectivity issue unexceptedly found was re-enrrollments, which corresponds to pupils how comeback to school.
+* Due to the size of the files only individuals without droupouts or reenrrollments were kept. However, this is an important issue to consider for future research.
+* A third selectivity issue identified was related to individuals who were not beneficieries of the program, or comparison group. Some of them were eligible for the program but are not part of it. This group of pupils or _defiers_ are of interest in further research about the impacts of the program.
+* Administrative data is a powerful source of information to perform research and perform impact evaluation analysis. Nonetheless, it is demanding in terms of data cleaning. 
+* In this data managment project is shown taht by combinging three different types of administrative data from one country a _Regression Discontinuity_ estimation can be perform.
+* Big data is a challenging really for applied economics
+
+
+
+ 
+
+
+
+
+
+
