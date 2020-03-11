@@ -1,8 +1,20 @@
-# familias
+# Purpose
 
 Version 0.1.0
 
-This project aims to identify household members in educational databases and proestimate effects 
+This project aims to facilitate how three data sets from the same population but with different information (i.e different variables, not all the individuals identifiable) go to a general cleaning of identifiers, then the data is horizontally merge and statistically analyzed afterwards.
+
+### Size of the data
+Sometimes individual data sets are big in size and it is important to read it first by parts. For instance, read first column and/or first row.
+
+### Cleaning identifiers
+More often than not identifiers are duplicated or contain missing values. Hence, the code looks for these two features.
+
+### Merge
+After read and clean the next step is to merge the available datasets
+
+### Statistics
+Let's analyze the final data
 
 
 ## Project organization
