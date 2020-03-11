@@ -4,7 +4,7 @@ subtitle: 'Econometric Methods 2 (ECRMRS1)'
 author: "Marly Tatiana Celis"
 email: "m.t.celisgalvez@students.uu.nl"
 date: "January 31th, 2020"
-abstract: This Data Management Plan describes the cleaning data sets that were undertaken with three administrative datasets. Three challenges were faced during this project. The first one was related to efficiency. Due to the size in the storage of the datasets, some variables and individuals were prioritized for further analysis. The second one was the identification of selectivity issues that arouse in administrative data. One selectivity issue was the case of attrition or dropouts, also it was the case with defiers or pupils who were eligible for a conditional cash transfer but did not participate. Finally, the third issue is the challenge imposed by Big Data in applied economics and the necessity to explore software like R.
+
 output: 
   pdf_document:
     latex_engine: xelatex
@@ -22,17 +22,6 @@ knitr::opts_chunk$set(echo = TRUE,  tidy.opts=list(width.cutoff=60), tidy=TRUE, 
 #r["CRAN"] = "http://cran.us.r-project.org"
 #options(repos = r)
 
-#if (!require("data.table")) { install.packages("data.table"); library(data.table) }
-#if (!require("data.table")) { install.packages("data.table"); library(data.table) }
-#if (!require("dplyr)")) {install.packages("dplyr"); library(dplyr)}
-#if (!require("ggplot2)")) {install.packages("ggplot2"); library(ggplot2)}
-#if (!require("backports")) {install.packages("backports"); library(backports)} 
-#if (!require("tidyverse)")) {install.packages("tidyverse"); library(tidyverse)}
-#if (!require("rapportools")) {install.packages("rapportools"); library(rapportools)}
-#if (!require("descr")) {install.packages("descr"); library(descr)}
-#if (!require("fastDummies")) {install.packages("fastDummies"); library(fastDummies)}
-#if (!require("magrittr")) {install.packages("magrittr"); library(magrittr)}
-#if install.packages("fakeR")
 
 ```
 
@@ -170,13 +159,6 @@ The first attempt of importing the datasets used a basic command _read.delim_ wh
 However, this procedure led to a failure in the assignment of RAM memory while importing the data. As a consequence the first challenge for this project is reading the files in a efficient but still useful way.
 
 *![Crash.](D:/2_2019_Colombia/data_fa/crash.jpg)
-
-```{r metadata, eval=false}
-
-
-
-
-```
 
 ```{r usingfread, eval=TRUE}
 
@@ -569,7 +551,7 @@ This is probably the most important dataset because it contains the variable _sc
   summary(score_c)
   score_c<-score_c[!is.na(score_c$puntaje)]
   head(score_c)
-  Cols.Chosen<-c("num_assets", "puntaje","documen", "ingresos" )
+  Cols.Chosen<-c("num_assets", "puntaje","documen", "ingresos" ) #TODO
   final_score <- score_c[,(Cols.Chosen):=NULL]
   getwd()
   final_score$puntaje<-as.numeric(final_score$puntaje)
@@ -692,7 +674,7 @@ setkey(score_practice,documen)
 
 #dt_a[dt_b, on = .(b = y)]
 
-admin_educ_practice <- admin_practice[educ_practice, on = .(DOCUMENTO = NRO_DOCUMENTO_2014)]
+admin_educ_practice <- admin_practice[educ_practice, on = .(DOCUMENTO = NRO_DOCUMENTO_2014)] #TODO
 nomatch=0
 admin_educ_score_practice <- admin_educ_practice[score_practice, on =.(DOCUMENTO = documen)]
 summary(admin_educ_score_practice)
@@ -700,12 +682,11 @@ summary(admin_educ_score_practice)
 ```
 ```{r merge_2, eval=TRUE }
 
-admin_project <- rename(admin_practice, c("DOCUMENTO"="ID"))
-educ_project <- rename(educ_practice, c("NRO_DOCUMENTO_2014"="ID"))
-score_project <- rename(score_practice, c("documen"="ID"))
+admin_practice <- rename(admin_practice, c("DOCUMENTO"="ID"))
+educ_practice <- rename(educ_practice, c("NRO_DOCUMENTO_2014"="ID"))
+score_practice <- rename(score_practice, c("documen"="ID"))
 
 ```
-
 
 \begin{center}
 \begin{tabular}{|l|l|l|l|}
@@ -716,35 +697,29 @@ score_project <- rename(score_practice, c("documen"="ID"))
     X         &     NA    &     NA    &     NA  
 \end{tabular}
 \end{center}
-
-
-
 Therefore the strategy goes as follows
-
 - I first do a inner join between _score_ and _educ_. In that sense I am observing all poor people, with a score (above or below the cutoff) that are observable in the educational dataset. There are some people I am not interested in such as non scholar population.
 - Second, I do a left join between the first merge in the previous step and the _admin_ data set. In that sense, I am keeping all potential beneficiries because I am keeping all individuals with score, in the left dataset. Also, I am identifying the treated people. Consequently all _NA_ in the administrative data corresponds to people with a score that are attending school and such all of them are potential _comparison group_. Further test should be done to verify they are a valid counterfactual.
 
 
 ```{r merge_real, eval=TRUE}
 
-
-
 #Inner join
-score_educ<-merge(score, educ, by.x = "ID", by.y = "ID") %>% print
+score_educ_practice<-merge(score_practice, educ_practice, by.x = "ID", by.y = "ID") %>% print
   dim(score_educ)
 
 #Left join
-score_educ_admin <- merge(score_educ, admin, by = "ID", all.x = TRUE) %>% print
-  dim(score_educ_admin)
+score_educ_admin_practice <- merge(score_educ_practice, admin_practice, by = "ID", all.x = TRUE) %>% print
+  dim(score_educ_admin_practice)
   
 ```
 
 ```{r verifc, eval=TRUE}
 
-treated <- ifelse(!is.na(score_educ_admin$CODBENEFICIARIO_MFA),1,0)
+treated <- ifelse(!is.na(score_educ_admin_practice$CODBENEFICIARIO_MFA),1,0)
   table(treated) 
 
-dummy_puntaje <- ifelse(!is.na(score_educ_admin$puntaje),1,0)
+dummy_puntaje <- ifelse(!is.na(score_educ_admin_practice$puntaje),1,0)
   table(dummy_puntaje) #This confirms that all individuals has an score assigned
   
   rm("admin", "educ", "score", "score_educ")
@@ -753,17 +728,17 @@ dummy_puntaje <- ifelse(!is.na(score_educ_admin$puntaje),1,0)
 
 ```{r savingdata, eval=TRUE}
 
-setDF(score_educ_admin)
+setDF(score_educ_admin_practice)
 
-class(score_educ_admin)
+class(score_educ_admin_practice)
 
 # Save an object to a file
-  saveRDS(score_educ_admin, file = "./data/processed/score_educ_admin.rds")
+  saveRDS(score_educ_admin_practice, file = "./data/processed/score_educ_admin_practice.rds")
 
-write.csv(score_educ_admin,'./data/processed/score_educ_admin.csv')
+write.csv(score_educ_admin_practice,'./data/processed/score_educ_admin_practice.csv')
 
 # Restore the object
-  score_educ_admin <- readRDS(file = "./data/processed/score_educ_admin.rds")
+  score_educ_admin_practice <- readRDS(file = "./data/processed/score_educ_admin_practice.rds")
 
 
 
@@ -777,40 +752,40 @@ Now let's review some general statistics for the whole dataset that finally was 
 
 ``` {r stateduc, eval=TRUE}
 
-score_educ_admin$treated <- ifelse(!is.na(score_educ_admin$CODBENEFICIARIO_MFA),1,0)
+score_educ_admin_practice$treated <- ifelse(!is.na(score_educ_admin_practice$CODBENEFICIARIO_MFA),1,0)
   table(treated) 
   
 treated.f <- factor(treated, levels= c(0,1),
   labels = c("Comparison", "Beneficiarie"))
 
-score_educ_admin$treated_f <- factor(treated, levels= c(0,1),
+score_educ_admin_practice$treated_f <- factor(treated, levels= c(0,1),
   labels = c("Comparison", "Beneficiarie"))
 
-str(score_educ_admin)
+str(score_educ_admin_practice)
 
 ```
 
 
 ```{r aboutrd, eval=TRUE}
 # Kernel Density Plot
-  d1 <- density(score_educ_admin$puntaje) # returns the density data
+  d1 <- density(score_educ_admin_practice$puntaje) # returns the density data
   plot(d1, main = "Kernel density of score") # plots the results
 
 # Density plots using a more stylish code  
-  p <- ggplot(score_educ_admin, aes(x=puntaje)) + geom_density()
+  p <- ggplot(score_educ_admin_practice, aes(x=puntaje)) + geom_density()
   p
   p+ geom_vline(aes(xintercept=(weight=30.1)) ,
             color="blue", linetype="dashed", size=1)
 
-  newgraph <- ggplot(score_educ_admin, aes(x=puntaje, color=treated.f)) +
+  newgraph <- ggplot(score_educ_admin_practice, aes(x=puntaje, color=treated.f)) +
   geom_density()
   newgraph
 
 # Add mean lines
 
-mean_sco <- ddply(score_educ_admin, "treated.f", summarise, grp.mean=mean(puntaje))
+mean_sco <- ddply(score_educ_admin_practice, "treated.f", summarise, grp.mean=mean(puntaje))
 
-compagraph <-ggplot(score_educ_admin, aes(x=puntaje, color=treated.f)) +
+compagraph <-ggplot(score_educ_admin_practice, aes(x=puntaje, color=treated.f)) +
   geom_density()+
   geom_vline(data=mean_sco, aes(xintercept=grp.mean, color=treated.f),
              linetype="dashed")
@@ -823,19 +798,19 @@ compagraph
 ```{r distr1, eval= TRUE}
 
 
-ggplot(score_educ_admin, aes(treated, puntaje)) +
+ggplot(score_educ_admin_practice, aes(treated, puntaje)) +
         geom_boxplot()
 
 ```
 
 ```{r distr2, eval= TRUE}
 
-ggplot(score_educ_admin, aes(treated, num_retakes)) +
+ggplot(score_educ_admin_practice, aes(treated, num_retakes)) +
         geom_boxplot()
 ```
 
 ```{r distr3, eval= TRUE}
-ggplot(score_educ_admin, aes(treated, num_assets)) +
+ggplot(score_educ_admin_practice, aes(treated, num_assets)) +
         geom_boxplot()
 
 
@@ -844,31 +819,12 @@ ggplot(score_educ_admin, aes(treated, num_assets)) +
 
 ## 5.3 Regression Discontinuity Design
 
-As mentioned in the purpose of thisData Managment Project, one of the purpose is also to show the potential use of these data as inputs for an impact evaluation and therfore for decision policy making. To do that a general overview of a regression discontinuity design. However, deeper analysis is not presented here.
-
-To show this potential use the RDROBUST command is used.
-
-[sites.google.com/site/rdpackages](https://sites.google.com/site/rdpackages/home)
-
-install.packages('rdrobust')
-library(rdrobust)
-
-
-This package has the following features
-
-- rdrobust: inference and graphical procedures using local polynomial and partitioning regression methods.
-- rdlocrand: finite-sample inference using local randomization methods.
-- rddensity: manipulation testing using local polynomial density methods.
-- rdmulti: estimation, inference, RD Plots, and extrapolation with multiple cutoffs and multiple scores.
-- rdpower: power and sample size calculations using robust bias-corrected local polynomial inference.
-
-
 ```{r trialrd, eval=FALSE}
 
 
 #score_educ_admin <- readRDS(file = "score_educ_admin.rds")
 
-attach(score_educ_admin) 
+attach(score_educ_admin_practice) 
 
 rdplot(y=num_retakes, x=puntaje, binselect="es", c=32, ci=95, 
          title="RD Plot: Program", 
@@ -880,53 +836,28 @@ rdplot(y=treated, x=puntaje, binselect="es", c=32, ci=95,
          y.label="Treatment",
          x.label="Score")
 
-
-
 summary(rdrobust(y=num_retakes, x=puntaje, c=30))
 
 ```
 
 # Final Remarks
 
-## Some errors
-
-During the develpment of this data managment project some issues occurred in regard with R and RMarkdown implementation. Programming in R has been a challenging task since it is a constant developing software. 
 
 
-When importing the data some issues were faced. Some related to the libraries that requiere other libraries. For example:
+#Something extra to practice with
 
->> Error: When i is a data.table (or character vector), the columns to join by must be specified using 'on=' argument (see ?data.table), by keying x (i.e. sorted, and, marked as sorted, see ?setkey), or by sharing column names between x and i (i.e., a natural join). Keyed joins might have further speed benefits on very large data due to x being sorted in RAM.
-
-When reading the first time, some columns are type 'integer64' but package bit64 is not installed. Those columns will print as strange looking floating point data. There is no need to reload the data. Simply install.packages('bit64') to obtain the integer64 print method and print the data again.
-
-![import.](D:\2_2019_Colombia\data_fa\while_reading_score.png)
-
-
-It was neccesary to debug R and Latex. Useful information was found
-
-[Source of R Markdown](https://yihui.org/tinytex/r/#debugging) 
-
-
-![rmark.](D:\2_2019_Colombia\data_fa\rmarkdown.png)
-
-One importat issue is that the so called _*BIG DATA*_ comes not only with opportunities but also with challenges. Whether it comes from administrative data, as in the present case, or it comes from other kind of sources of information. The following error shows that a simple statistical summary can fail when the data anlayez is big enough to not be supported by one computer.
-
-![rderr.](D:\2_2019_Colombia\data_fa\while_rd.png)
-
-# Conclusions
-
-* R is an effective data handling and storage software, and it offers several different ways to perform the same function. Thus it is challenging to manage.
-* The dataset were _reduce_ in size to properly perform the data cleaning and to create one _clean_ easily usable data set. 
-* The final dataset *score_educ_admin.csv* can be open in other softwares such as STATA or SPSS.
-* During the data cleaning some important selectivity issues were found and discussed. One being attrition. In terms of educational indicators, attittion represents dropouts, pupils who leave school. A second selectivity issue unexceptedly found was re-enrrollments, which corresponds to pupils how comeback to school.
-* Due to the size of the files only individuals without droupouts or reenrrollments were kept. However, this is an important issue to consider for future research.
-* A third selectivity issue identified was related to individuals who were not beneficieries of the program, or comparison group. Some of them were eligible for the program but are not part of it. This group of pupils or _defiers_ are of interest in further research about the impacts of the program.
-* Administrative data is a powerful source of information to perform research and perform impact evaluation analysis. Nonetheless, it is demanding in terms of data cleaning. 
-* In this data managment project is shown taht by combinging three different types of administrative data from one country a _Regression Discontinuity_ estimation can be perform.
-* Big data is a challenging really for applied economics
-
-
-
+#numeros narcisistas
+numero <-153
+nnar<- function(numero ) {
+    x <- sum(as.numeric(strsplit(as.character(numero),"")[[1]])**nchar(numero))
+  if (x==numero) {
+    print("narcisista")
+  }
+  else {
+    print("no narcisista")
+  }
+}
+nnar(numero)  
  
 
 
