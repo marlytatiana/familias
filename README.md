@@ -2,7 +2,7 @@
 
 Version 0.1.0
 
-This project aims to identify household members in educational databases and pro[D[D[A[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[1;5C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Destimate effects [3~[3~[3~[3~[3~[3~[3~[3~[3~[3~[3~[C[C[B[B[D[B[A[3~[3~[3~[3~[C[C[C[C[C[1;5C[B[A 
+This project aims to identify household members in educational databases and proestimate effects 
 
 
 ## Project organization
